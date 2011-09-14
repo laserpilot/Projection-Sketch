@@ -30,3 +30,4 @@ apps/iphoneExamples/*/*.xcodeproj
 apps/iphoneExamples/*/Project.xcconfig
 apps/iPhoneExamples/*/ofxiphone-Info.plist
 apps/iPhoneExamples/*/iPhone_Prefix.pch
+/ContourSketchv1/build

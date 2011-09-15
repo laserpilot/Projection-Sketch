@@ -14,7 +14,7 @@ void testApp::setup(){
     
     colorImg.allocate(camWidth,camHeight);
 	grayImg.allocate(camWidth,camHeight);
-    threshold = 160;
+    threshold = 120;
     
     ofBackground(0, 0, 0);
 }
@@ -36,30 +36,193 @@ void testApp::update(){
 
 //--------------------------------------------------------------
 void testApp::draw(){
+    ofSetRectMode(OF_RECTMODE_CORNER);
     colorImg.draw(0,0,ofGetWidth(),0.75*ofGetWidth());
-    ptAvg=0;
-   // noise.setUniform1f("timeValX", ofGetElapsedTimef() * 0.1 );
-   // noise.setUniform1f("timeValY", -ofGetElapsedTimef() * 0.18 );
-   // noise.setUniform2f("mouse", mouseX - ofGetWidth()/2, ofGetHeight()/2-mouseY );
     
-	for( int i=0; i<(int)contourFinder.blobs.size(); i++ ) {
-		ofNoFill();
-		ofBeginShape();
-		for( int j=0; j<contourFinder.blobs[i].nPts; j++ ) {
-            mappedX=ofMap(contourFinder.blobs[i].pts[j].x,0,camWidth,0,ofGetWidth());
-            mappedY=ofMap(contourFinder.blobs[i].pts[j].y,0,camHeight,0,.75*ofGetWidth());
-            ofVertex( mappedX, mappedY );
-            // ofCircle(mappedX, mappedY, 20);
-            // ofDrawBitmapString(ofToString(i), mappedX,mappedY);
-            // ofDrawBitmapString(ofToString(j), mappedX+20,mappedY);
-		}
-		ofEndShape();
-        for( int k=0; k<contourFinder.blobs[i].nPts; k+=50){
-            mappedX=ofMap(contourFinder.blobs[i].pts[k].x,0,camWidth,0,ofGetWidth());
-            mappedY=ofMap(contourFinder.blobs[i].pts[k].y,0,camHeight,0,.75*ofGetWidth());
-            ofCircle(mappedX, mappedY, 10);
-        }
-	}
+    switch (keyPress) {
+        case 'q':
+            //Thickness as a function of point value in blob
+                for( int i=0; i<(int)contourFinder.blobs.size(); i++ ) {
+                    ofNoFill();
+                    ofBeginShape();
+                    linethick=0.1;
+                    for( int j=0; j<contourFinder.blobs[i].nPts; j=j+30 ) {
+                        mappedX=ofMap(contourFinder.blobs[i].pts[j].x,0,camWidth,0,ofGetWidth());
+                        mappedY=ofMap(contourFinder.blobs[i].pts[j].y,0,camHeight,0,.75*ofGetWidth());
+                        linethick=ofMap(j,0,contourFinder.blobs[i].nPts,0.0,4.0);
+                        ofSetLineWidth(linethick);
+                        ofVertex( mappedX, mappedY );
+                        ofCircle(mappedX, mappedY, 20);
+                    }
+                    ofEndShape();
+                    
+                }
+                ofNoFill();
+            break;
+        case 'w' :
+            //Centroid to circle
+            for( int i=0; i<(int)contourFinder.blobs.size(); i++ ) {
+                ofNoFill();
+                ofBeginShape();
+                ofSetLineWidth(1);
+                for( int k=0; k<contourFinder.blobs[i].nPts; k+=50){
+                    mappedX=ofMap(contourFinder.blobs[i].pts[k].x,0,camWidth,0,ofGetWidth());
+                    mappedY=ofMap(contourFinder.blobs[i].pts[k].y,0,camHeight,0,.75*ofGetWidth());
+                    ofVertex( mappedX, mappedY );
+                    mapCentX = ofMap(contourFinder.blobs[i].centroid.x,0,camWidth,0,ofGetWidth());
+                    mapCentY = ofMap(contourFinder.blobs[i].centroid.y,0,camHeight,0,.75*ofGetWidth());
+                    ofVertex( mapCentX, mapCentY);
+                    ofCircle(mappedX, mappedY, 10);
+                }
+                ofEndShape();
+            }
+            break;
+        case 'e' :
+            //Plain Draw
+            //Number values of points
+            ofSetColor(255,255,255);
+            for( int i=0; i<(int)contourFinder.blobs.size(); i++ ) {
+                    ofNoFill();
+                    ofBeginShape();
+                    linethick=0.1;
+                    for( int j=0; j<contourFinder.blobs[i].nPts; j=j+30 ) {
+                        mappedX=ofMap(contourFinder.blobs[i].pts[j].x,0,camWidth,0,ofGetWidth());
+                        mappedY=ofMap(contourFinder.blobs[i].pts[j].y,0,camHeight,0,.75*ofGetWidth());
+                        ofVertex( mappedX, mappedY );
+                        ofDrawBitmapString(ofToString(i), mappedX,mappedY);
+                         ofDrawBitmapString(ofToString(j), mappedX+20,mappedY);
+                    }
+                    ofEndShape();
+            }
+            break;
+        case 'r' :
+            //Plain Draw
+            //Fuzzy Caterpillar
+            ofEnableSmoothing();
+            for( int i=0; i<(int)contourFinder.blobs.size(); i++ ) {
+                ofNoFill();
+                //ofBeginShape();
+                for( int j=0; j<contourFinder.blobs[i].nPts; j++ ) {
+                    mappedX=ofMap(contourFinder.blobs[i].pts[j].x,0,camWidth,0,ofGetWidth());
+                    mappedY=ofMap(contourFinder.blobs[i].pts[j].y,0,camHeight,0,.75*ofGetWidth());
+                    ofSetColor(255, 255, ofMap(j, 0, contourFinder.blobs[i].nPts, 40, 255));
+                    ofLine(mappedX, 
+                           mappedY,
+                           mappedX+(sin(ofGetElapsedTimef()*ofMap(j, 0, contourFinder.blobs[i].nPts, 5, 40))*(ofMap(j, 0, contourFinder.blobs[i].nPts, 5, 40))), 
+                           mappedY+(cos(ofGetElapsedTimef()*ofMap(j, 0, contourFinder.blobs[i].nPts, 5, 40))*10));
+                }
+               // ofEndShape();
+                ofSetColor(255,255,255);
+            }
+            ofNoFill();
+            break;
+        case 't' :
+            //Draw Squares
+            for( int i=0; i<(int)contourFinder.blobs.size(); i++ ) {
+                ofNoFill();
+               // ofBeginShape();
+                for( int j=0; j<contourFinder.blobs[i].nPts; j=j+15 ) {
+                    mappedX=ofMap(contourFinder.blobs[i].pts[j].x,0,camWidth,0,ofGetWidth());
+                    mappedY=ofMap(contourFinder.blobs[i].pts[j].y,0,camHeight,0,.75*ofGetWidth());
+                    ofRect(mappedX,mappedY,ofMap(mappedX,0,ofGetWidth(),1,30),ofMap(mappedY,0,ofGetHeight(),1,30));
+                }
+               // ofEndShape(); 
+            }  
+            break;
+            
+        case 'y' :
+            //Draw Squares
+            for( int i=0; i<(int)contourFinder.blobs.size(); i++ ) {
+                ofFill();
+                // ofBeginShape();
+                for( int j=10; j<contourFinder.blobs[i].nPts; j=j+10 ) {
+                    mappedX=ofMap(contourFinder.blobs[i].pts[j].x,0,camWidth,0,ofGetWidth());
+                    mappedY=ofMap(contourFinder.blobs[i].pts[j].y,0,camHeight,0,.75*ofGetWidth());
+                    ofPushMatrix();
+                    ofTranslate(mappedX, mappedY);
+                    ofRotateZ(ofRadToDeg(atan2((mappedX-contourFinder.blobs[i].pts[j-10].x),(mappedY-contourFinder.blobs[i].pts[j-10].y))*(PI/2)));
+                    ofRect(0,0,20,20);
+                    ofPopMatrix();
+                }
+                // ofEndShape(); 
+            }  
+            break;
+            
+        case 'u' :
+            //Centroid
+            for( int i=0; i<(int)contourFinder.blobs.size(); i++ ) {
+                ofNoFill();
+                ofBeginShape();
+                for( int j=0; j<contourFinder.blobs[i].nPts; j=j+5 ) {
+                    mappedX=ofMap(contourFinder.blobs[i].pts[j].x,0,camWidth,0,ofGetWidth());
+                    mappedY=ofMap(contourFinder.blobs[i].pts[j].y,0,camHeight,0,.75*ofGetWidth());
+                    ofVertex(mappedX,mappedY);
+                }
+                ofEndShape();
+                for( int j=0; j<contourFinder.blobs[i].nPts; j=j+10 ) {
+                    mappedX=ofMap(contourFinder.blobs[i].pts[j].x,0,camWidth,0,ofGetWidth());
+                    mappedY=ofMap(contourFinder.blobs[i].pts[j].y,0,camHeight,0,.75*ofGetWidth());
+                    mapCentX = ofMap(contourFinder.blobs[i].centroid.x,0,camWidth,0,ofGetWidth());
+                    mapCentY = ofMap(contourFinder.blobs[i].centroid.y,0,camHeight,0,.75*ofGetWidth());
+                    ofLine(mappedX,
+                           mappedY,
+                           mapCentX+(20*sin(ofGetElapsedTimef())),
+                           mapCentY+(20*cos(ofGetElapsedTimef()))
+                                     );
+                }
+            }  
+            break;
+            
+        case 'i' :
+            //Centroid
+            tog=0;
+            for( int i=0; i<(int)contourFinder.blobs.size(); i++ ) {
+                ofNoFill();
+                ofBeginShape();
+                for( int j=0; j<contourFinder.blobs[i].nPts; j=j+5 ) {
+                    mappedX=ofMap(contourFinder.blobs[i].pts[j].x,0,camWidth,0,ofGetWidth());
+                    mappedY=ofMap(contourFinder.blobs[i].pts[j].y,0,camHeight,0,.75*ofGetWidth());
+                    ofVertex(mappedX,mappedY);
+                }
+                ofEndShape();
+                for( int j=0; j<contourFinder.blobs[i].nPts; j=j+30 ) {
+                    mappedX=ofMap(contourFinder.blobs[i].pts[j].x,0,camWidth,0,ofGetWidth());
+                    mappedY=ofMap(contourFinder.blobs[i].pts[j].y,0,camHeight,0,.75*ofGetWidth());
+                    mapCentX = ofMap(contourFinder.blobs[i].centroid.x,0,camWidth,0,ofGetWidth());
+                    mapCentY = ofMap(contourFinder.blobs[i].centroid.y,0,camHeight,0,.75*ofGetWidth());
+                    if((tog%2)==0){
+                        ofFill();
+                        cout << "Even" <<endl;
+                    }
+                    else{
+                        ofNoFill();
+                        cout << "Odd" <<endl;
+                    }
+                    ofTriangle(mappedX, mappedY, 
+                               ofMap(contourFinder.blobs[i].pts[j].x,0,camWidth,0,ofGetWidth()), 
+                               ofMap(contourFinder.blobs[i].pts[j].y,0,camHeight,0,.75*ofGetWidth()), 
+                               mapCentX, mapCentY);     
+                    tog++;
+                }
+            }  
+            break;
+
+
+
+        default:
+            //Plain Draw`
+            for( int i=0; i<(int)contourFinder.blobs.size(); i++ ) {
+                ofNoFill();
+                ofBeginShape();
+                for( int j=0; j<contourFinder.blobs[i].nPts; j++ ) {
+                    mappedX=ofMap(contourFinder.blobs[i].pts[j].x,0,camWidth,0,ofGetWidth());
+                    mappedY=ofMap(contourFinder.blobs[i].pts[j].y,0,camHeight,0,.75*ofGetWidth());
+                    ofVertex( mappedX, mappedY );
+                }
+                ofEndShape();  
+            }  
+            break;
+    }
     
 }
 
@@ -77,6 +240,7 @@ void testApp::keyPressed(int key){
         case OF_KEY_RETURN:
             ofToggleFullscreen();
 	}
+    keyPress=key;
 }
 
 //--------------------------------------------------------------

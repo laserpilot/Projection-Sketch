@@ -25,6 +25,8 @@ class testApp : public ofBaseApp{
         ofxCvColorImage		colorImg;
         ofxCvGrayscaleImage grayImg;
         ofxCvContourFinder  contourFinder;
+    
+        int keyPress;
         
         int 				threshold;
         int                 camWidth;
@@ -33,5 +35,12 @@ class testApp : public ofBaseApp{
         float               mappedY;
         int                 ptAvg;
         int                 ptSum;
+    
+        int                 mapCentX;
+        int                 mapCentY;
+    
+        float                 linethick;
+    
+    int tog;
 		
 };

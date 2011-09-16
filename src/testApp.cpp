@@ -1,11 +1,31 @@
 #include "testApp.h"
 
+GLfloat lightOnePosition[] = {40.0, 40, 100.0, 0.0};
+GLfloat lightOneColor[] = {0.99, 0.99, 0.99, 1.0};
+
+GLfloat lightTwoPosition[] = {-40.0, 40, 100.0, 0.0};
+GLfloat lightTwoColor[] = {0.99, 0.99, 0.99, 1.0};
+
 //--------------------------------------------------------------
 void testApp::setup(){
     
-    ofSetVerticalSync(false);
-	ofEnableAlphaBlending();
+    ofSetVerticalSync(true);
+	//ofEnableAlphaBlending();
     ofSetLogLevel(OF_LOG_VERBOSE);
+    
+    
+    glShadeModel (GL_SMOOTH);
+    
+    /* initialize lighting */
+    glLightfv (GL_LIGHT0, GL_POSITION, lightOnePosition);
+    glLightfv (GL_LIGHT0, GL_DIFFUSE, lightOneColor);
+    glEnable (GL_LIGHT0);
+    glLightfv (GL_LIGHT1, GL_POSITION, lightTwoPosition);
+    glLightfv (GL_LIGHT1, GL_DIFFUSE, lightTwoColor);
+    glEnable (GL_LIGHT1);
+    glEnable (GL_LIGHTING);
+    glColorMaterial (GL_FRONT_AND_BACK, GL_DIFFUSE);
+    glEnable (GL_COLOR_MATERIAL);
     
     camWidth = 640;
     camHeight = 480;
@@ -207,7 +227,72 @@ void testApp::draw(){
             }  
             break;
 
+        case 'a' :
+            //GL FIRE
+            glEnable(GL_DEPTH_TEST);
+            for( int i=0; i<(int)contourFinder.blobs.size(); i++ ) {
+                ofFill();
+                //ofSetColor(ofRandom(255), ofRandom(255), ofRandom(255));
+                ofBeginShape();
+                for( int j=0; j<(contourFinder.blobs[i].nPts-50); j=j+15 ) {
+                    mappedX=ofMap(contourFinder.blobs[i].pts[j].x,0,camWidth,0,ofGetWidth());
+                    mappedY=ofMap(contourFinder.blobs[i].pts[j].y,0,camHeight,0,.75*ofGetWidth());
+                    //ofBox( mappedX, mappedY,0,30 );
+                    glBegin(GL_QUADS);
+                        glColor4f(1.0, 0, 0, 1.0);
+                        glVertex3f(mappedX,mappedY ,0.0 );
+                        glColor4f(1.0, 1.0, 0,1.0);
+                        glVertex3f(ofMap(contourFinder.blobs[i].pts[j+50].x,0,camWidth,0,ofGetWidth()),
+                                   ofMap(contourFinder.blobs[i].pts[j+50].y,0,camHeight,0,.75*ofGetWidth()) ,
+                                   0.0 );
+                        glVertex3f(ofMap(contourFinder.blobs[i].pts[j+30].x,0,camWidth,0,ofGetWidth()),
+                                   ofMap(contourFinder.blobs[i].pts[j+30].y,0,camHeight,0,.75*ofGetWidth()) ,
+                                   0.0 );
+                        glVertex3f(ofMap(contourFinder.blobs[i].pts[j+15].x,0,camWidth,0,ofGetWidth()),
+                                   ofMap(contourFinder.blobs[i].pts[j+15].y,0,camHeight,0,.75*ofGetWidth()) ,
+                                   0.0 );
+                        glEnd();
+                    
+                }
+            
+                ofEndShape();  
+            } 
+            glDisable(GL_DEPTH_TEST);
+            break;
+        case 's' :
+            //GL FIRE Centroid
+            glEnable(GL_DEPTH_TEST);
+            for( int i=0; i<(int)contourFinder.blobs.size(); i++ ) {
+                ofFill();
+                //ofSetColor(ofRandom(255), ofRandom(255), ofRandom(255));
+                ofBeginShape();
+                for( int j=0; j<(contourFinder.blobs[i].nPts-50); j=j+15 ) {
+                    mappedX=ofMap(contourFinder.blobs[i].pts[j].x,0,camWidth,0,ofGetWidth());
+                    mappedY=ofMap(contourFinder.blobs[i].pts[j].y,0,camHeight,0,.75*ofGetWidth());
+                    mapCentX = ofMap(contourFinder.blobs[i].centroid.x,0,camWidth,0,ofGetWidth());
+                    mapCentY = ofMap(contourFinder.blobs[i].centroid.y,0,camHeight,0,.75*ofGetWidth());
 
+                    //ofBox( mappedX, mappedY,0,30 );
+                    glBegin(GL_QUADS);
+                    glColor4f(1.0, 0, 0, 1.0);
+                    glVertex3f(mappedX,mappedY ,0.0 );
+                    glColor4f(1.0, 1.0, 0,1.0);
+                    glVertex3f(ofMap(contourFinder.blobs[i].pts[j+50].x,0,camWidth,0,ofGetWidth()),
+                               ofMap(contourFinder.blobs[i].pts[j+50].y,0,camHeight,0,.75*ofGetWidth()) ,
+                               0.0 );
+                    glVertex3f(ofMap(contourFinder.blobs[i].pts[j+30].x,0,camWidth,0,ofGetWidth()),
+                               ofMap(contourFinder.blobs[i].pts[j+30].y,0,camHeight,0,.75*ofGetWidth()) ,
+                               0.0 );
+                    glVertex3f(mapCentX,
+                               mapCentY ,
+                               0.0 );
+                    glEnd();
+                    
+                }
+                ofEndShape();  
+            }  
+            glDisable(GL_DEPTH_TEST);
+            break;
 
         default:
             //Plain Draw`
@@ -223,6 +308,7 @@ void testApp::draw(){
             }  
             break;
     }
+    ofSetColor(255,255,255);
     
 }
 

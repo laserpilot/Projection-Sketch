@@ -293,6 +293,21 @@ void testApp::draw(){
             }  
             glDisable(GL_DEPTH_TEST);
             break;
+            case 'd':
+            //Plain Draw`
+            for( int i=0; i<(int)contourFinder.blobs.size(); i++ ) {
+                ofNoFill();
+                ofBeginShape();
+                for( int j=0; j<contourFinder.blobs[i].nPts; j=j+4 ) {
+                    mappedX=ofMap(contourFinder.blobs[i].pts[j].x,0,camWidth,0,ofGetWidth());
+                    mappedY=ofMap(contourFinder.blobs[i].pts[j].y,0,camHeight,0,.75*ofGetWidth());
+                    ofVertex( mappedX, mappedY );
+                    ofVertex( 0, mappedY );
+
+                }
+                ofEndShape();  
+            }  
+            break;
 
         default:
             //Plain Draw`
